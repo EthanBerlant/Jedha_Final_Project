@@ -35,7 +35,8 @@ for name in CPI_types:
             thingy = (y, m, month['CPI'].mean(skipna=True))
             new_CPI.append(thingy)
     new_name = name.split('.')[1]
-    CPI_dict[f'{name}'] = pd.DataFrame(new_CPI, columns=['year', 'month', f'CPI_{new_name}'])
+    new_name = 'CPI-' + new_name.split('US')[1]
+    CPI_dict[f'{new_name}'] = pd.DataFrame(new_CPI, columns=['year', 'month', new_name])
 
 df = CPI_dict[list(CPI_dict.keys())[0]][['year', 'month']]
 for key in list(CPI_dict.keys()):
@@ -48,6 +49,7 @@ df['date'] = date_creation['date'].apply(parse)
 df = df.drop(['year','month','day'], axis=1)
 df = df.sort_values(by='date')
 df = fill_dates(df)
-df = df.dropna()
+df = df.dropna().reset_index(drop='True')
 
-df.to_feather(f'{path}/Data/CPI.ftr')
+for name in CPI_dict.keys():
+    df[['date', name]].to_feather(f'{path}/Data/{name}.ftr')
